@@ -1,0 +1,86 @@
+.press-start-2p-regular {
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+h1 {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 30px;
+}
+
+h2 {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 20px;
+}
+
+h3 {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 25px;
+}
+
+body {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 12px;
+}
+
+button {
+    font-family: "Press Start 2P", system-ui;
+}
+
+.layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.game-card {
+  border-radius: 12px;
+  background-color: rgb(46, 46, 46);
+  padding: 2%;
+  max-width: 500px;
+  overflow: hidden;
+  margin: 20px auto;
+  box-shadow: 5px 5px 15px 5px #000000;
+}
+
+.genre-tag,
+.platform-tag,
+.rating-tag,
+.release-tag {
+  cursor: pointer;
+}
+
+.game-card-area{
+  flex: 1;
+}
+
+.genre-tag:hover,
+.platform-tag:hover,
+.rating-tag:hover,
+.release-tag:hover {
+  color: #e07979;
+  cursor: pointer;
+}
+
+.ban-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  max-width: 200px;
+  gap: 8px;
+}
+
+.ban-item {
+  background-color: #c75d5d;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ban-item:hover {
+  background-color: #e07979;
+}

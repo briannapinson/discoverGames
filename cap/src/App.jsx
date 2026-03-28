@@ -1,121 +1,102 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react"
+import "./App.css"
+
+const API_KEY = "133e9feee1a245caaec9451412e5ae85"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [game, setGame] = useState(null)
+  const [banList, setBanList] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [firstLoad, setFirstLoad] = useState(true)
+  const [loadingPhrase, setLoadingPhrase] = useState("")
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const fetchGame = async () => {
+  setLoadingPhrase(firstLoad ? "Armed and dangerous!" : "Again!")
+  setFirstLoad(false)
+  setLoading(true)
+  let foundGame = null
 
-      <div className="ticks"></div>
+  while (!foundGame) {
+    const randomPage = Math.floor(Math.random() * 500) + 1
+    const res = await fetch(
+      `https://api.rawg.io/api/games?key=${API_KEY}&page_size=20&page=${randomPage}`
+    )
+    const data = await res.json()
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+    foundGame = data.results.find(candidate => {
+      const genres = candidate.genres.map(g => g.name)
+      const platforms = candidate.parent_platforms.map(p => p.platform.name)
+      const year = candidate.released?.slice(0, 4)
+      const rating = Math.round(candidate.rating * 2) / 2
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      return !banList.some(item =>
+        genres.includes(item) ||
+        platforms.includes(item) ||
+        year === String(item) ||
+        rating === item
+      )
+    })
+  }
+
+  foundGame.roundedRating = Math.round(foundGame.rating * 2) / 2
+  setGame(foundGame)
+  setLoading(false)
 }
 
+  const addToBan = (value) => {
+    if (!banList.includes(value)) {
+      setBanList([...banList, value])
+    }
+  }
+
+  const removeFromBan = (value) => {
+    setBanList(banList.filter(item => item !== value))
+  }
+
+  return (
+    <div>
+      <h1>🎮 Game Discovery</h1>
+      <button onClick={fetchGame}>Discover</button>
+
+      {loading && <p className="loading">{loadingPhrase}</p>}
+
+      <div className="layout">
+        <div className="game-card-area">
+          {game && (
+            <div className="game-card">
+              <h2>{game.name}</h2>
+              <img src={game.background_image} alt={game.name} width="400" />
+
+              <p>Released: <span className="release-tag" onClick={() => addToBan(game.released.slice(0, 4))}>{game.released.slice(0, 4)}</span></p>
+
+              <p>Rating: <span className="rating-tag" onClick={() => addToBan(game.roundedRating)}>{game.roundedRating}</span></p>
+
+              <p>Genres: {game.genres.map((g, index) => (
+                <span className="genre-tag" key={g.id} onClick={() => addToBan(g.name)}>
+                  {g.name}{index < game.genres.length - 1 ? ", " : ""}
+                </span>
+              ))}</p>
+
+              <p>Platforms: {game.parent_platforms.map((p, index) => (
+                <span className="platform-tag" key={p.platform.id} onClick={() => addToBan(p.platform.name)}>
+                  {p.platform.name}{index < game.parent_platforms.length - 1 ? ", " : ""}
+                </span>
+              ))}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="ban-list">
+          <h3>Ban List</h3>
+          <p>Select an attribute on the game card to ban it!</p>
+          {banList.map((item) => (
+            <span key={item} className="ban-item" onClick={() => removeFromBan(item)}>
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 export default App
